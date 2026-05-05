@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Your Words Can Harm — a reveal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="wrapped.css?v=28">
+</head>
+<body>
+
+<div id="app">
+  <!-- stage scopes the HUD + slides so they don't bleed past the rounded frame -->
+  <div class="stage-wrap">
+    <div id="slide-stage" class="stage"></div>
+
+    <!-- Top corner: brand + back -->
+    <div class="hud">
+      <a class="hud-back" href="index.html" aria-label="Back to dashboard">←<span class="hud-back-label">Dashboard</span></a>
+    </div>
+
+    <!-- Bottom: progress dots + nav -->
+    <div class="hud-bottom">
+      <div class="dots" id="dots"></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="content.js?v=22"></script>
+<script src="charts.js?v=22"></script>
+<script>
+  fetch('data.json?v=22').then(r => r.json()).then(d => {
+    window.WCHS_DATA = d;
+    for (const p of d.people) {
+      p.c = p.c || {};
+      p.c.Gender = (p.g === 0 || p.g === 1) ? p.g : null;
+      p.c.Race   = (p.rw === 0 || p.rw === 1) ? p.rw : null;
+    }
+    const s = document.createElement('script');
+    s.src = 'wrapped.js?v=21';
+    document.body.appendChild(s);
+  });
+</script>
+
+</body>
+</html>

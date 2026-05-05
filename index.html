@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Words Can Harm Scale — an interactive data visualization</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=24">
+  <link rel="stylesheet" href="scale.css?v=24">
+  <link rel="stylesheet" href="sections.css?v=25">
+</head>
+<body>
+
+<!-- ———————————————————————————————————————————————————— top nav -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">The Words Can Harm Scale <em>·</em> Interactive Data</div>
+    <nav class="topbar-nav" id="topnav">
+      <a href="#take"><span class="tn-num">1</span><span class="tn-label">Take the scale</span></a>
+      <a href="#your-score"><span class="tn-num">2</span><span class="tn-label">Your score &amp; the items</span></a>
+      <a href="#who"><span class="tn-num">3</span><span class="tn-label">Who believes it</span></a>
+      <a href="#correlates"><span class="tn-num">4</span><span class="tn-label">What it correlates with</span></a>
+    </nav>
+  </div>
+</header>
+
+<!-- ———————————————————————————————————————————————————— page body -->
+<main class="page">
+
+  <!-- HEADER -->
+  <header class="page-header">
+    <div class="page-kicker">Interactive data dashboard</div>
+    <h1 class="page-title">The Words Can Harm Scale</h1>
+    <p class="page-deck">The <strong>Words Can Harm Scale</strong> is a 10-item measure of the belief that words can cause lasting psychological harm (<a href="https://doi.org/10.1016/j.paid.2026.113785" target="_blank" rel="noopener">Pratt et al., 2026</a>). This interactive data dashboard allows you to:</p>
+    <ol class="page-deck-list">
+      <li><a href="#take">Take the scale</a> to see how you compare to others.</li>
+      <li>Interact with the results of a 956-person nationally representative survey measuring <a href="#who">who believes</a> most strongly that words can harm, and <a href="#correlates">what is associated with holding this belief</a>.</li>
+    </ol>
+    <p class="page-cite">
+      Pratt, S., Jones, P. J., Bellet, B. W., McNally, R. J., &amp; Gray, K. (2026). The words can harm scale: Measuring beliefs about harmful speech. <em>Personality and Individual Differences, 257</em>, 113785. <a href="https://doi.org/10.1016/j.paid.2026.113785" target="_blank" rel="noopener">https://doi.org/10.1016/j.paid.2026.113785</a>
+    </p>
+    <div class="byline">
+      <a href="https://doi.org/10.1016/j.paid.2026.113785" target="_blank" rel="noopener">Paper</a>
+      <span class="sep">·</span>
+      <a href="https://osf.io/gf8j5/" target="_blank" rel="noopener">Dataset (OSF)</a>
+    </div>
+
+  </header>
+
+  <!-- —————————————————— TAKE THE SCALE -->
+  <section class="section" id="take">
+    <div class="section-head">
+      <div class="section-eyebrow">1 · Take the scale</div>
+      <h2 class="section-title">Take the Words Can Harm Scale</h2>
+      <p class="section-lede">Read each statement and move the slider to indicate how strongly you agree — from <em>1 (strongly disagree)</em> to <em>100 (strongly agree)</em>. Your score is the average of your answers. Your responses are completely anonymous and no data will be collected; your responses stay in your browser.</p>
+    </div>
+    <div id="scale-root"></div>
+  </section>
+
+  <!-- —————————————————— YOUR SCORE (appears after taking scale) -->
+  <div id="your-score">
+    <div id="dashboard-root" class="score-section"></div>
+  </div>
+
+  <!-- —————————————————— ITEMS -->
+  <section class="section" id="items">
+    <div class="section-head">
+      <div class="section-eyebrow">2 · The items &amp; your score</div>
+      <h2 class="section-title">How people answered each statement.</h2>
+      <p class="section-lede">Each row shows the full distribution of responses to that item across the 956-person nationally representative sample, with the sample's mean marked. Once you've taken the scale above, your answers will appear as <strong>orange markers</strong> alongside the sample's responses.</p>
+    </div>
+    <div id="items-root"></div>
+  </section>
+
+  <!-- —————————————————— DEMOGRAPHICS -->
+  <section class="section" id="who">
+    <div class="section-head">
+      <div class="section-eyebrow">3 · Who believes words can harm</div>
+      <h2 class="section-title">Score distributions by group.</h2>
+      <p class="section-lede">Compare how the score distribution shifts across demographic and political groups. The <strong>grey baseline</strong> is always the full 956-person sample.</p>
+    </div>
+    <div id="demo-root"></div>
+  </section>
+
+  <!-- —————————————————— CORRELATES -->
+  <section class="section" id="correlates">
+    <div class="section-head">
+      <div class="section-eyebrow">4 · WHAT IS ASSOCIATED WITH THE BELIEF THAT WORDS CAN HARM</div>
+      <h2 class="section-title">Correlations with 37 other measures.</h2>
+      <p class="section-lede">Select a measure below to see how strongly it correlates with the Words Can Harm Scale. All correlations are Pearson's <em>r</em>, computed from the nationally representative sample of 956 U.S. adults.</p>
+    </div>
+    <div id="corr-root"></div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <div class="cite">
+      Pratt, S., Jones, P. J., Bellet, B. W., McNally, R. J., &amp; Gray, K. (2026). The words can harm scale: Measuring beliefs about harmful speech. <em>Personality and Individual Differences, 257</em>, 113785. <a href="https://doi.org/10.1016/j.paid.2026.113785" target="_blank" rel="noopener">doi.org/10.1016/j.paid.2026.113785</a>
+    </div>
+    <div>Data available at osf.io/gf8j5. All analyses and figures on this page are computed from the anonymized dataset using Claude.AI; any discrepancies from the published results may stem from rounding errors or differences in variable coding. This is meant to be a fun interactive data dashboard; if your primary goal is reproducibility or reporting, please refer to the published paper or the public dataset. This page is not affiliated with the authors or publisher.</div>
+  </div>
+</footer>
+
+<script src="content.js?v=24"></script>
+<script src="charts.js?v=24"></script>
+<script>
+  fetch('data.json?v=24').then(r => r.json()).then(d => {
+    window.WCHS_DATA = d;
+    // Inject demographic dummy variables into per-person `c` block so the
+    // existing scatter plot machinery can treat them like any other correlate.
+    //   Gender: 1 = Female, 0 = Male  (other / non-binary excluded → null)
+    //   Race:   1 = White,  0 = Non-White
+    for (const p of d.people) {
+      p.c = p.c || {};
+      p.c.Gender = (p.g === 0 || p.g === 1) ? p.g : null;
+      p.c.Race   = (p.rw === 0 || p.rw === 1) ? p.rw : null;
+    }
+    const scripts = ['scale.js', 'dashboard.js', 'items.js', 'demographics.js', 'correlates.js'];
+    (function load(i) {
+      if (i >= scripts.length) return bootTopNav();
+      const s = document.createElement('script');
+      s.src = scripts[i] + '?v=24';
+      s.onload = () => load(i + 1);
+      s.onerror = () => load(i + 1);
+      document.body.appendChild(s);
+    })(0);
+  });
+
+  function bootTopNav() {
+    const links = document.querySelectorAll('.topbar-nav a');
+    const sections = [...links].map(a => document.querySelector(a.getAttribute('href')));
+    const setActive = () => {
+      const y = window.scrollY + window.innerHeight * 0.35;
+      let idx = -1;
+      sections.forEach((s, i) => { if (s && s.offsetTop <= y) idx = i; });
+      links.forEach((l, i) => l.classList.toggle('active', i === idx));
+    };
+    window.addEventListener('scroll', setActive, { passive: true });
+    setActive();
+  }
+</script>
+
+</body>
+</html>
