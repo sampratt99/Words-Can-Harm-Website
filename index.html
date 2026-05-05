@@ -7,11 +7,33 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=24">
-  <link rel="stylesheet" href="scale.css?v=24">
-  <link rel="stylesheet" href="sections.css?v=25">
+  <link rel="stylesheet" href="styles.css?v=25">
+  <link rel="stylesheet" href="scale.css?v=26">
+  <link rel="stylesheet" href="sections.css?v=26">
 </head>
 <body>
+
+<!-- Mobile-only notice (CSS hides on >700px). Dismissible. -->
+<div class="mobile-notice" id="mobile-notice" hidden>
+  <div class="mobile-notice-inner">
+    <span class="mn-icon" aria-hidden="true">💻</span>
+    <span class="mn-text">This dashboard is best viewed on a desktop or tablet — some charts are dense and may feel cramped on a phone.</span>
+    <button class="mn-close" id="mn-close" aria-label="Dismiss notice">×</button>
+  </div>
+</div>
+<script>
+  (function(){
+    var key = 'wch.mobile-notice.dismissed.v1';
+    var el = document.getElementById('mobile-notice');
+    if (!el) return;
+    if (sessionStorage.getItem(key) === '1') return;
+    el.hidden = false;
+    document.getElementById('mn-close').addEventListener('click', function(){
+      el.hidden = true;
+      try { sessionStorage.setItem(key, '1'); } catch(e) {}
+    });
+  })();
+</script>
 
 <!-- ———————————————————————————————————————————————————— top nav -->
 <header class="topbar">

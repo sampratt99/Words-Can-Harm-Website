@@ -721,7 +721,9 @@ body {
   /* deep, calm gradient — keeps the card visually distinct */
   background: linear-gradient(165deg, #1A0A2E 0%, #3D0F5C 45%, #6B0F4D 100%);
   text-align: left;
-  padding: 28px 16px 28px;
+  /* extra bottom padding so the retake-link clears the absolute-positioned
+     progress dots (which sit at bottom: 24px with ~24px height) */
+  padding: 28px 16px 80px;
   justify-content: flex-start;
   gap: 10px;
 }

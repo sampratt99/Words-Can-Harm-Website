@@ -498,3 +498,51 @@
 }
 .method-card ul li:last-child { border-bottom: none; }
 .method-card ul li b { color: var(--ink); font-weight: 500; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* ————————————————————————————————————————————————————————————
+   MOBILE TIGHTENING (≤700px) — desktop unaffected.
+   These rules are scoped strictly to the ≤700px breakpoint and only
+   loosen rigid widths that cause horizontal overflow on phones.
+   ———————————————————————————————————————————————————————————— */
+@media (max-width: 700px) {
+  /* SCORE HERO — pull the giant numeral down so it fits a phone */
+  .score-hero { padding: 18px 20px; }
+  .score-hero .score { font-size: clamp(56px, 16vw, 72px); }
+  .score-hero .score .unit { font-size: 18px; }
+
+  /* ITEMS — relax the 4-col grid so the bars + labels fit;
+     collapse the right "you" column under the row when needed.
+     The header reads "ITEM | DISTRIBUTION (1–100) | YOU"; on mobile
+     we switch to a stacked layout: title row, then bar row. */
+  .item-bar-row {
+    grid-template-columns: 28px 1fr 48px;
+    grid-template-areas:
+      "n  t   you"
+      ". bar bar"
+      ". stats stats";
+    row-gap: 6px;
+    padding: 14px 14px 16px;
+  }
+  .item-bar-row .n   { grid-area: n; }
+  .item-bar-row .t   { grid-area: t; font-size: 13.5px; }
+  .item-bar-row .bar-cell { grid-area: bar; height: 96px; }
+  .item-bar-row .stats { grid-area: stats; padding-right: 0; }
+  .item-bar-row .you { grid-area: you; padding-left: 0; }
+  /* The header row uses the same template, but its "stats" cell is
+     just an axis label — fine to leave under the bar. */
+  .item-bar-row.item-bar-header { padding-top: 8px; padding-bottom: 8px; }
+
+  /* DEMOGRAPHICS — tighter stats grid (already collapses to 2-col
+     at this breakpoint via existing rule); shrink ds-value */
+  .demo-stat { padding: 12px 14px; }
+  .demo-stat .ds-value { font-size: 24px; }
+
+  /* CORRELATES — collapse stage card big number, tighten paddings */
+  .corr-stage-card { padding: 18px 16px; }
+  .cs-head .csr .r-num { font-size: 36px; }
+  .corr-row { grid-template-columns: 1fr 56px 38px; padding: 9px 14px; }
+  .corr-row .lbl { font-size: 12.5px; }
+
+  /* METHODS — already collapses ≤760; just tighten card padding */
+  .method-card { padding: 16px 18px; }
+}

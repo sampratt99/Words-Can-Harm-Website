@@ -247,3 +247,36 @@
   font-family: var(--mono);
   font-weight: 500;
 }
+
+/* ————————————————————————————————————————————————————————————
+   MOBILE (≤700px) — stack item rows; abbreviate anchors so the
+   slider fits without horizontal overflow. Desktop unchanged.
+   ———————————————————————————————————————————————————————————— */
+@media (max-width: 700px) {
+  .scale-item-compact {
+    grid-template-columns: 28px 1fr 44px;
+    grid-template-areas:
+      "num text  value"
+      "num slider slider";
+    gap: 6px 10px;
+    padding: 12px 14px;
+  }
+  .scale-item-compact .num    { grid-area: num; align-self: start; padding-top: 2px; }
+  .scale-item-compact .text   { grid-area: text; font-size: 13.5px; line-height: 1.35; }
+  .scale-item-compact .slider-col { grid-area: slider; padding: 10px 0 4px; }
+  .scale-item-compact .value  { grid-area: value; align-self: start; font-size: 14px; padding-top: 2px; }
+
+  /* Hide the two intermediate anchor labels; keep the three that fit */
+  .scale-item-compact .anchors {
+    font-size: 9.5px;
+    gap: 2px;
+  }
+  .scale-item-compact .anchors > span:nth-child(2),
+  .scale-item-compact .anchors > span:nth-child(4) {
+    display: none;
+  }
+  /* Shrink the panel-card type a notch */
+  .panel-card { padding: 14px 16px; }
+  .progress-card .prog-count,
+  .running-score-card .rs-value { font-size: 30px; }
+}
