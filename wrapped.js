@@ -654,15 +654,23 @@
     ctx.arc(ux, sy - 4, 7, 0, Math.PI * 2);
     ctx.fill();
 
-    // percentile caption (centered)
-    ctx.textAlign = 'center';
+    // percentile caption (centered) — measure both pieces so they don't overlap
+    const pctText = `${pct}%`;
+    const labelText = 'SCORED LOWER THAN YOU';
+    ctx.font = '600 30px "Helvetica Neue", "Helvetica", "Arial", sans-serif';
+    const pctW = ctx.measureText(pctText).width;
+    ctx.font = '500 24px "Helvetica Neue", "Helvetica", "Arial", sans-serif';
+    const labelW = ctx.measureText(labelText).width;
+    const gap = 12;
+    const totalW = pctW + gap + labelW;
+    const startX = cardX + cardW/2 - totalW/2;
+    ctx.textAlign = 'left';
     ctx.fillStyle = 'rgba(255,255,255,0.92)';
     ctx.font = '600 30px "Helvetica Neue", "Helvetica", "Arial", sans-serif';
-    ctx.fillText(`${pct}%`, cardX + cardW/2 - 90, sy + sh + 56);
+    ctx.fillText(pctText, startX, sy + sh + 56);
     ctx.fillStyle = 'rgba(255,255,255,0.78)';
     ctx.font = '500 24px "Helvetica Neue", "Helvetica", "Arial", sans-serif';
-    ctx.fillText('SCORED LOWER THAN YOU', cardX + cardW/2 + 38, sy + sh + 56);
-    ctx.textAlign = 'left';
+    ctx.fillText(labelText, startX + pctW + gap, sy + sh + 56);
 
     // dotted footer divider
     ctx.strokeStyle = 'rgba(255,255,255,0.28)';
@@ -676,10 +684,8 @@
     // Footer
     ctx.fillStyle = 'rgba(255,255,255,0.78)';
     ctx.font = '500 22px "Helvetica Neue", "Helvetica", "Arial", sans-serif';
-    ctx.fillText(`PRATT ET AL. (2026)  ·  N = ${N}`, left, cardY + cardH - 40);
-    ctx.textAlign = 'right';
-    ctx.fillText('WORDSCANHARM.ORG', right, cardY + cardH - 40);
     ctx.textAlign = 'left';
+    ctx.fillText(`PRATT ET AL. (2026)  ·  N = ${N}`, left, cardY + cardH - 40);
 
     return await new Promise(res => c.toBlob(b => res(b), 'image/png', 0.95));
   }
