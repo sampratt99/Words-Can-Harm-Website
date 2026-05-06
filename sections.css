@@ -80,6 +80,36 @@
   max-width: 44ch;
 }
 
+/* Share-this-dashboard pill — restrained, editorial. */
+.score-hero .score-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 9px 16px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  background: var(--bg);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease, transform 80ms ease;
+}
+.score-hero .score-share:hover {
+  background: var(--accent);
+  color: #fff;
+}
+.score-hero .score-share:active { transform: translateY(1px); }
+.score-hero .score-share .ss-icon { font-size: 14px; line-height: 1; }
+.score-hero .score-share.is-flashed {
+  background: var(--accent);
+  color: #fff;
+}
+
 .item-breakdown {
   background: var(--bg);
   border: 1px solid var(--line);
@@ -142,7 +172,8 @@
   background: var(--line);
   border: 1px solid var(--line);
   border-radius: 4px;
-  overflow: hidden;
+  /* overflow:hidden would clip a position:sticky header — let the
+     parent .chart-card do the corner clipping instead. */
 }
 .item-bar-row {
   display: grid;
@@ -165,6 +196,13 @@
   background: var(--bg-1);
   padding-top: 10px;
   padding-bottom: 10px;
+  position: sticky;
+  /* Topbar is ~58px tall; sit just below it. */
+  top: 58px;
+  z-index: 5;
+  /* Keep an opaque fill so rows scroll behind it cleanly */
+  background-color: var(--bg-1);
+  box-shadow: 0 1px 0 var(--line);
 }
 .item-bar-row.item-bar-header:hover { background: var(--bg-1); }
 .item-bar-row.item-bar-header .stats { display: block; }

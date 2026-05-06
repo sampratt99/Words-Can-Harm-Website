@@ -97,6 +97,10 @@
           <div class="score">${score.toFixed(1)}<span class="unit"> / 100</span></div>
           <div class="percentile">${pctText(pct)} in the N = 956 sample.</div>
           <div class="interp"><strong>You have a ${interp.label} belief that words can harm.</strong> ${interp.elab}</div>
+          <button class="score-share" id="score-share-btn" type="button" data-default="Share this dashboard">
+            <span class="ss-icon" aria-hidden="true">↗</span>
+            <span class="ss-label">Share this dashboard</span>
+          </button>
         </div>
         <div class="chart-card" style="padding:20px 24px">
           <div class="chart-header">
@@ -110,6 +114,47 @@
         </div>
       </div>
     `;
+    wireShareButton();
+  }
+
+  // Share-this-dashboard button: native share if available, else clipboard copy.
+  function wireShareButton() {
+    const btn = document.getElementById('score-share-btn');
+    if (!btn) return;
+    const lbl = btn.querySelector('.ss-label');
+    const icon = btn.querySelector('.ss-icon');
+    const flash = (msg) => {
+      const def = btn.dataset.default;
+      lbl.textContent = msg;
+      btn.classList.add('is-flashed');
+      setTimeout(() => {
+        lbl.textContent = def;
+        btn.classList.remove('is-flashed');
+      }, 1800);
+    };
+    if (!navigator.share) {
+      lbl.textContent = 'Copy link';
+      if (icon) icon.textContent = '⎘';
+      btn.dataset.default = 'Copy link';
+    }
+    btn.addEventListener('click', async () => {
+      const url = location.origin + location.pathname.replace(/[^/]*$/, '') + 'index.html';
+      const payload = {
+        title: 'Words Can Harm Scale: Interactive Data Dashboard',
+        text: 'Take the 10-item Words Can Harm Scale (Pratt et al., 2026) and explore the data — who believes it, and what beliefs and traits it correlates with:',
+        url,
+      };
+      if (navigator.share) {
+        try { await navigator.share(payload); } catch {}
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(`${payload.text} ${payload.url}`);
+        flash('Copied! ✓');
+      } catch {
+        flash('Press ⌘+C to copy');
+      }
+    });
   }
 
   // Hidden until score is available; items.js handles the per-item breakdown either way.

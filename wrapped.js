@@ -136,15 +136,37 @@
             if (cls) shareBtn.classList.remove(cls);
           }, 1800);
         };
-        // If the Web Share API isn't available, fall back to copy-link
-        // and re-label the button so the affordance is honest.
+        // Detect whether the browser can share files — on iOS/Android this
+        // lets us send the card image alongside the link in one tap.
+        const probeFile = new File(['ok'], 'p.txt', { type: 'text/plain' });
+        const canShareFiles = !!(navigator.canShare && navigator.canShare({ files: [probeFile] }));
+        // Adjust label honestly:
+        //   - share + files  → "Share card & link"
+        //   - share, no files → "Send to a friend" (default)
+        //   - no share at all → "Copy link"
         if (!navigator.share) {
           lbl.textContent = 'Copy link';
           if (icon) icon.textContent = '⎘';
           shareBtn.dataset.default = 'Copy link';
+        } else if (canShareFiles) {
+          lbl.textContent = 'Share card & link';
+          shareBtn.dataset.default = 'Share card & link';
         }
         shareBtn.addEventListener('click', async () => {
           const payload = shareText();
+          // Try sharing image + link together
+          if (canShareFiles) {
+            try {
+              const blob = await renderShareCardBlob();
+              const file = new File([blob], 'words-can-harm.png', { type: 'image/png' });
+              if (navigator.canShare({ files: [file] })) {
+                await navigator.share({ ...payload, files: [file] });
+                return;
+              }
+            } catch (err) {
+              // fall through to text-only share
+            }
+          }
           if (navigator.share) {
             try { await navigator.share(payload); } catch {}
             return;
@@ -460,7 +482,7 @@
 
         <div class="dig-deeper">
           <div class="dd-eyebrow">Want to dig deeper?</div>
-          <p class="dd-lede">The full interactive data dashboard lets you explore who believes that words can harm, see how every item is distributed, and find what other beliefs and traits are associated with the Words Can Harm Scale.</p>
+          <p class="dd-lede">The full interactive data dashboard lets you explore who believes that words can harm and what other beliefs and traits are associated with the Words Can Harm Scale.</p>
           <div class="dd-actions">
             <a class="dd-btn dd-primary" href="index.html">
               <span class="dd-label">Interactive Data Dashboard</span>
@@ -477,12 +499,216 @@
     `;
   }
 
+  // Render the user's share card to a 1080×1350 PNG Blob suitable for
+  // attaching to navigator.share({files}). Drawn directly on canvas (rather
+  // than html-to-image) so it doesn't depend on font load timing or DOM layout.
+  async function renderShareCardBlob() {
+    const W = 1080, H = 1350;
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+
+    // outer dark frame so the card sits on something instead of bleeding
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#1a0820');
+    bg.addColorStop(1, '#2a0e2e');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // soft grain
+    ctx.fillStyle = 'rgba(255,255,255,0.025)';
+    for (let i = 0; i < 1500; i++) ctx.fillRect(Math.random()*W, Math.random()*H, 1, 1);
+
+    // —— card geometry ——
+    const cardW = 920, cardH = 1180;
+    const cardX = (W - cardW) / 2;
+    const cardY = (H - cardH) / 2;
+    const r = 36;
+
+    function roundRect(x, y, w, h, rad) {
+      ctx.beginPath();
+      ctx.moveTo(x+rad, y);
+      ctx.lineTo(x+w-rad, y);
+      ctx.quadraticCurveTo(x+w, y, x+w, y+rad);
+      ctx.lineTo(x+w, y+h-rad);
+      ctx.quadraticCurveTo(x+w, y+h, x+w-rad, y+h);
+      ctx.lineTo(x+rad, y+h);
+      ctx.quadraticCurveTo(x, y+h, x, y+h-rad);
+      ctx.lineTo(x, y+rad);
+      ctx.quadraticCurveTo(x, y, x+rad, y);
+      ctx.closePath();
+    }
+
+    // card gradient — same as in-app .share-card
+    const grad = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY + cardH);
+    grad.addColorStop(0, '#FF4D6D');
+    grad.addColorStop(0.6, '#C9184A');
+    grad.addColorStop(1, '#6A0F4D');
+
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 60;
+    ctx.shadowOffsetY = 20;
+    ctx.fillStyle = grad;
+    roundRect(cardX, cardY, cardW, cardH, r);
+    ctx.fill();
+    ctx.restore();
+
+    // texture inside card
+    ctx.save();
+    roundRect(cardX, cardY, cardW, cardH, r);
+    ctx.clip();
+    ctx.fillStyle = 'rgba(255,255,255,0.04)';
+    for (let i = 0; i < 1200; i++) {
+      ctx.fillRect(cardX + Math.random()*cardW, cardY + Math.random()*cardH, 1, 1);
+    }
+    const sheen = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY + cardH);
+    sheen.addColorStop(0, 'rgba(255,255,255,0.08)');
+    sheen.addColorStop(0.4, 'rgba(255,255,255,0)');
+    ctx.fillStyle = sheen;
+    ctx.fillRect(cardX, cardY, cardW, cardH);
+    ctx.restore();
+
+    // —— compute values (same as slideShare) ——
+    const s = score();
+    const sorted = data.people.map(p => p.w).sort((a,b)=>a-b);
+    const pct = Math.round(percentile(sorted, s));
+    const interp = interpretScore(s);
+    const N = data.people.length.toLocaleString();
+    const all = data.people.map(p => p.w);
+    const grid = 80;
+    const dens = kde(all, 1, 100, grid, 5);
+    const maxD = Math.max(...dens);
+
+    const padX = 64;
+    const left = cardX + padX;
+    const right = cardX + cardW - padX;
+
+    // Eyebrow
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = '700 22px "Helvetica Neue", "Helvetica", "Arial", sans-serif';
+    ctx.textBaseline = 'alphabetic';
+    ctx.textAlign = 'left';
+    ctx.fillText('YOUR WORDS CAN HARM SCORE', left, cardY + 84);
+
+    // Big number
+    ctx.fillStyle = '#fff';
+    ctx.font = '800 280px "Helvetica Neue", "Helvetica", "Arial", sans-serif';
+    const numStr = s.toFixed(0);
+    ctx.fillText(numStr, left, cardY + 350);
+    const numW = ctx.measureText(numStr).width;
+
+    // /100
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = '500 38px "Helvetica Neue", "Helvetica", "Arial", sans-serif';
+    ctx.fillText('/ 100', left + numW + 18, cardY + 270);
+
+    // Strength label
+    ctx.fillStyle = 'rgba(255,236,210,0.95)';
+    ctx.font = 'italic 42px "Instrument Serif", "Times New Roman", Georgia, serif';
+    ctx.fillText(interp.label, left + numW + 18, cardY + 332);
+
+    // Headline ("I have a [strong] belief that words can harm.")
+    ctx.fillStyle = 'rgba(255,255,255,0.96)';
+    ctx.font = 'italic 50px "Instrument Serif", "Times New Roman", Georgia, serif';
+    // word-wrap the headline manually
+    const headline = `I have a ${interp.label} belief that words can harm.`;
+    wrapText(ctx, headline, left, cardY + 460, cardW - padX*2, 64);
+
+    // Distribution sparkline
+    const sx = left, sy = cardY + 720, sw = cardW - padX*2, sh = 130;
+    let path = new Path2D();
+    for (let i = 0; i < grid; i++) {
+      const x = sx + (i/(grid-1)) * sw;
+      const y = sy + sh - (dens[i]/maxD) * (sh - 8);
+      if (i === 0) path.moveTo(x, y);
+      else path.lineTo(x, y);
+    }
+    // fill area
+    let area = new Path2D();
+    for (let i = 0; i < grid; i++) {
+      const x = sx + (i/(grid-1)) * sw;
+      const y = sy + sh - (dens[i]/maxD) * (sh - 8);
+      if (i === 0) area.moveTo(x, y);
+      else area.lineTo(x, y);
+    }
+    area.lineTo(sx + sw, sy + sh);
+    area.lineTo(sx, sy + sh);
+    area.closePath();
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.fill(area);
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.lineWidth = 2;
+    ctx.stroke(path);
+
+    // user marker
+    const ux = sx + ((s - 1)/99) * sw;
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(ux, sy - 4);
+    ctx.lineTo(ux, sy + sh);
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(ux, sy - 4, 7, 0, Math.PI * 2);
+    ctx.fill();
+
+    // percentile caption (centered)
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    ctx.font = '600 30px "Helvetica Neue", "Helvetica", "Arial", sans-serif';
+    ctx.fillText(`${pct}%`, cardX + cardW/2 - 90, sy + sh + 56);
+    ctx.fillStyle = 'rgba(255,255,255,0.78)';
+    ctx.font = '500 24px "Helvetica Neue", "Helvetica", "Arial", sans-serif';
+    ctx.fillText('SCORED LOWER THAN YOU', cardX + cardW/2 + 38, sy + sh + 56);
+    ctx.textAlign = 'left';
+
+    // dotted footer divider
+    ctx.strokeStyle = 'rgba(255,255,255,0.28)';
+    ctx.setLineDash([3, 5]);
+    ctx.beginPath();
+    ctx.moveTo(left, cardY + cardH - 80);
+    ctx.lineTo(right, cardY + cardH - 80);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Footer
+    ctx.fillStyle = 'rgba(255,255,255,0.78)';
+    ctx.font = '500 22px "Helvetica Neue", "Helvetica", "Arial", sans-serif';
+    ctx.fillText(`PRATT ET AL. (2026)  ·  N = ${N}`, left, cardY + cardH - 40);
+    ctx.textAlign = 'right';
+    ctx.fillText('WORDSCANHARM.ORG', right, cardY + cardH - 40);
+    ctx.textAlign = 'left';
+
+    return await new Promise(res => c.toBlob(b => res(b), 'image/png', 0.95));
+  }
+
+  // Simple word-wrap helper for canvas
+  function wrapText(ctx, text, x, y, maxW, lineH) {
+    const words = text.split(' ');
+    let line = '';
+    let cy = y;
+    for (let i = 0; i < words.length; i++) {
+      const test = line ? line + ' ' + words[i] : words[i];
+      if (ctx.measureText(test).width > maxW && line) {
+        ctx.fillText(line, x, cy);
+        line = words[i];
+        cy += lineH;
+      } else {
+        line = test;
+      }
+    }
+    if (line) ctx.fillText(line, x, cy);
+  }
+
   // build a share caption + url for clipboard / native share
   function shareText() {
     const url = location.origin + location.pathname.replace(/wrapped\.html$/, '') + 'wrapped.html';
+    const s = score();
     return {
       title: 'Words Can Harm Scale',
-      text: `How strongly do you believe words can harm? Take the 10-question scale used in Pratt et al. (2026) and see how you compare to a nationally representative sample of ${data.people.length.toLocaleString()} U.S. adults:`,
+      text: `I scored ${s.toFixed(0)}/100 on the Words Can Harm Scale (Pratt et al., 2026). How strongly do you believe words can harm? Take the 10-question scale and compare yourself to a nationally representative sample of ${data.people.length.toLocaleString()} U.S. adults:`,
       url,
     };
   }
